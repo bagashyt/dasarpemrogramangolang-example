@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gorilla/websocket"
@@ -17,6 +18,11 @@ const MESSAGE_CHAT = "Chat"
 const MESSAGE_LEAVE = "Leave"
 
 var connections = make([]*WebSocketConnection, 0)
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
 
 type SocketPayload struct {
 	Message string
@@ -45,7 +51,7 @@ func main() {
 	})
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		currentGorillaConn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
+		currentGorillaConn, err := upgrader.Upgrade(w, r, w.Header())
 		if err != nil {
 			http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
 		}
